@@ -2,6 +2,9 @@ package mapreduce
 
 import (
 	"hash/fnv"
+    "io/ioutil"
+    "fmt"
+    "os"
 )
 
 func doMap(
@@ -31,6 +34,31 @@ func doMap(
 	//
 	// Look at Go's ioutil and os packages for functions to read
 	// and write files.
+    data, err := ioutil.ReadFile(inFile)
+    if err != nil {
+        fmt.Println(err)
+    }
+    kvList := mapF(inFile, string(data))
+
+    fmt.Println("jobName:", jobName)
+    fmt.Println("mapTask:", mapTask)
+    fmt.Println("inFile:", inFile)
+    fmt.Println("nReduce:", nReduce)
+
+    for _, kv := range kvList {
+        reduceFileName := reduceName(jobName, mapTask, ihash(kv.Key) % nReduce)
+
+        f, err := os.OpenFile(reduceFileName, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+        if err != nil {
+            fmt.Println("OpenFile err:", err)
+        }
+
+        _, err = f.WriteString(kv.Key)
+        if err != nil {
+            fmt.Println("WriteString err:", err)
+        }
+        f.Close()
+    }
 	//
 	// Coming up with a scheme for how to format the key/value pairs on
 	// disk can be tricky, especially when taking into account that both
