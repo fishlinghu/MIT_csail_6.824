@@ -1,5 +1,13 @@
 package mapreduce
 
+import (
+	// "hash/fnv"
+	"io/ioutil"
+	// "encoding/json"
+	"fmt"
+	// "os"
+)
+
 func doReduce(
 	jobName string, // the name of the whole MapReduce job
 	reduceTask int, // which reduce task this is
@@ -16,6 +24,15 @@ func doReduce(
 	// You'll need to read one intermediate file from each map task;
 	// reduceName(jobName, m, reduceTask) yields the file
 	// name from map task m.
+
+	for m := 0; m < nMap; m++ {
+		fileName := reduceName(jobName, m, reduceTask)
+		_, err := ioutil.ReadFile(fileName)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("filename:", fileName)
+	}
 	//
 	// Your doMap() encoded the key/value pairs in the intermediate
 	// files, so you will need to decode them. If you used JSON, you can
